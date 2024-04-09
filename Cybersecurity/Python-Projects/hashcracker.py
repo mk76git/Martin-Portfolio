@@ -1,7 +1,7 @@
 import hashlib
 import pyfiglet
 
-ascii_banner = pyfiglet.figlet_format("TryHackMe \n Python 4 Pentesters \n HASH$
+ascii_banner = pyfiglet.figlet_format("HASH CRACKER \n HASH$
 print(ascii_banner)
 
 wordlist_location = str(input('Enter wordlist file location: '))
