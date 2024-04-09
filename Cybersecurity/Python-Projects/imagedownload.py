@@ -1,3 +1,5 @@
+// pip install requests
+
 import requests
 
 url = 'https://www.challagladiolen.nl/images/a3.jpg'
