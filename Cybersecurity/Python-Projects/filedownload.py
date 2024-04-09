@@ -1,3 +1,5 @@
+//pip install requests
+
 import requests
 
 url = 'https://raw.githubusercontent.com/danielmiessler/SecLists/master/Passwor$
