@@ -1,0 +1,641 @@
+Arch linux Tips and Fix
+
+//Removing Desktop environment on ARCH Linux
+
+pacman -Rscn Desktop_Name
+Ex: sudo pacman -Rscn gnome
+//If needed remove extras packages
+Ex: sudo pacman -Rscn gnome-extra
+
+//After don't forget to change reference to the old windows manager
+sudo nano /etc/rc.conf
+Go to "Daemons" and change for EX: gdm(gnome) to kdm(KDE)
+then reboot
+
+//How to change desktop resolution on Arch linux
+xrandr -s 1920x1080
+
+//How to list services
+sudo systemctl list-units --type service --state running --no-legend
+
+
+//"btop" very good
+
+//Set Arch console font
+sudo pacman -Syu terminus-font
+**To see the font go to: cd /usr/share/kbd/consolefonts
+sudo nano .bashrc
+setfont ter-d24b.psf.gz "At the end of the file"
+OR
+sudo nano /etc/vconsole.conf
+FONT="ter-d24b.psf.gz" (At the end)
+
+//How to install BlackArch tools for pentesting on Arch linux
+sudo curl -O https://blackarch.org/strap.sh
+chmod +x strap.sh
+sudo ./strap.sh
+//After "Blackarch repos will appear" and just install the tools you want
+Ex: sudo pacman -S nmap hydra gobuster john (ETC)
+
+----------------------------------------------------
+
+//Color terminal
+
+Replace x;y with one of the following to change the text colour:
+
+Colour Code
+Black 0;30
+Blue 0;34
+Green 0;32
+Cyan 0;36
+Red 0;31
+Purple 0;35
+Brown 0;33
+
+Assuming you want to have green text, the line would be
+export PS1="\e[0;32m[\u@\h \w]\$ \e[m"
+
+------------------------------------------------------------
+
+//Openssl
+openssl aes-256-cbc -in plaintextfile -out ciphertextfile (to encrypt)
+openssl aes-256-cbc -d -in ciphertextfile -out plaintextfile (to decrypt)
+
+//How to install arch linux on vmware
+1.Download Arch live ISO
+2.Boot on USB or ISO
+3.pacman -Syy 
+4.pacman -S archinstall
+5.Follow menu setting
+6.sudo reboot
+
+//Install Openssh
+sudo pacman -S openssh
+sudo systemctl enable sshd
+sudo systemctl start sshd
+sudo systemctl status sshd
+sudo ufw allow 22/tcp
+sudo ufw reload
+sudo ufw status verbose
+
+**If you want to install KDE or XFCE4 or Any other Desktop follow this
+1.sudo pacman -Syu
+2.sudo pacman -S xfce4 xfce4-goodies lightdm lightdm-gtk-greeter
+3.sudo systemctl enable lightdm
+4.sudo systemctl status lightdm
+5.sudo reboot
+
+//Install KDE Plasma on Arch linux
+sudo pacman -Syu
+sudo pacman -S plasma-desktop
+sudo pacman -S sddm
+sudo systemctl enable sddm.service
+sudo pacman -S plasma-meta
+
+
+//Archlinux remove aur packages
+AUR: sudo pacman -Rsn <package name>
+
+
+-----------------------------------------------------------
+
+//FIX ARCH NETWORK IS NOT WORKING (No internet)
+
+sudo systemctl enable systemd-networkd
+sudo systemctl start systemd-networkd
+sudo systemctl enable systemd-resolved
+sudo systemctl start systemd-resolved
+ip addr (state DOWN) It needs to be "UP"
+Copy the network name Ex: ens33
+
+sudo nano /etc/systemd/network/20-wired.network
+Inside the file write:
+
+[Match]
+Name=ens33
+
+[Network]
+DHCP=yes
+
+*Close and save the file
+
+sudo systemctl restart systemd-networkd
+sudo systemctl restart systemd-resolved
+
+ip addr (Now you have an IP with the State "UP"
+
+try ping www.google.com
+Everything is working.
+
+-------------------------------------------------------------
+
+
+Installing Apache2 web server
+
+sudo apt update
+sudo apt install -y apache2 apache2-utils
+systemctl status apache2
+// If needed
+sudo systemctl start apache2
+sudo systemctl enable apache2
+
+apache2 -v
+
+// Allow http on firewall
+sudo ufw allow http
+
+----------------------------------------------------------
+
+Installing PHP
+
+sudo apt install php7.4 libapache2-mod-php7.4 php7.4-mysql php-common php7.4-cli php7.4-common php7.4-json php7.4-opcache php7.4-readline
+sudo systemctl restart apache2
+php --version
+// Copy info php file to
+/var/www/html/info.php
+
+---------------------------------------------------------
+
+Installing MariaDB
+
+sudo apt install mariadb-server mariadb-client
+systemctl status mariadb
+// If needed
+sudo systemctl start mariadb
+sudo systemctl enable mariadb
+// Follow instruction
+sudo mysql_secure_installation
+
+// Try MariaDB
+sudo mariadb -u root
+exit;
+mariadb --version
+
+
+Grant privileges. To a new user execute:
+
+CREATE USER 'myuser'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON *.* TO 'myuser'@'localhost';
+FLUSH PRIVILEGES;
+
+
+MariaDB Remote Access:
+
+To allow remote access to MySQL, you have to comment out bind-address (you did) and skip-networking in the configuration file.
+
+Next, you have to make sure the user is allowed remote access. Check your user with this:
+
+SELECT User, Host FROM mysql.user;
+
+If your user here has '127.0.0.1' or 'localhost' listed as host, you don't have remote access.
+
+Change this with:
+
+UPDATE mysql.user SET HOST='%' WHERE User='__here_your_username';
+Flush privileges:
+
+FLUSH PRIVILEGES;
+The '%' is a wildcard for 'all hosts'.
+
+
+
+-----------------------------------------------------------
+
+Installing Webmin
+
+sudo apt update
+sudo apt install wget apt-transport-https software-properties-common
+
+// Import Webmin Repository Key
+wget -q http://www.webmin.com/jcameron-key.asc -O- | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] http://download.webmin.com/download/repository sarge contrib"
+
+// Install Webmin
+sudo apt install webmin
+sudo systemctl status webmin
+
+// Allow port on Ufw
+sudo ufw allow 10000/tcp
+sudo ufw reload
+
+// Now access the dashboard
+https://server-ip:10000/
+
+// Clic "Advanced" button in browserto authorise dashboard
+
+----------------------------------------------------------
+Installing and using SSH
+
+// install this on the server or remote computer
+sudo apt-get install openssh-server
+
+// install this on client computer
+sudo apt-get install openssh-client
+
+
+**On Server Allow port 22
+Ex: sudo ufw allow 22
+
+// Using SSH
+Syntax:
+ssh username@192.168.0.addrNum
+
+----------------------------------------------------
+Before change the following:
+1.vi /etc/ssh/sshd_config
+2.then change PermitRootLogin to yes
+
+// Generate the SSH Key
+ssh-keygen
+// Copy the key to server
+ssh-copy-id 192.168.0.196
+
+-------------------------------------------------
+SSH Config for LXD Containers
+
+sudo nano /etc/ssh/sshd_config
+1) PasswordAuthentication yes
+2) PermitRootLogin yes
+3) PubkeyAuthentication yes
+4) AuthorizedKeysFile .ssh/authorized_keys
+
+And then restarted sshd by : systemctl restart sshd
+
+How To:
+
+lxc launch images:centos/8/amd64 centos8
+lxc exec centos8 bash
+lxc list
+// Rename an instance
+lxc move oldname newname
+lxc info instancename
+lxc start centos8
+lxc stop centos8
+lxc delete centos8
+
+// how to list image:
+lxc image list images: debian
+-----------------------------------------------------
+Installing Samba
+
+sudo apt update
+sudo apt install samba
+
+// Check Samba installation
+whereis samba
+// You should see
+samba: /usr/sbin/samba /usr/lib/samba /etc/samba /usr/share/samba /usr/share/man/man7/samba.7.gz /usr/share/man/man8/samba.8.gz
+
+// Now that Samba is installed, we need to create a directory for it to share
+mkdir /home/<username>/sambashare/
+
+// Now open Samba configuration file
+
+sudo nano /etc/samba/smb.conf
+
+
+// At the bottom of the file, add the following lines
+
+[sambashare]
+    comment = Samba on Ubuntu
+    path = /home/username/sambashare
+    read only = no
+    browsable = yes
+
+// Access Apache2 folder
+[websamba]
+   comment = Apache directory
+   path = /var/www/html
+   read only = no
+   browsable = yes
+
+// Now change the ownership off th folder to copy file inside
+// To transfer files you can use WinSCP or windows command line
+sudo chown -R -v user /var/www/
+
+// Restart Samba server
+sudo service smbd restart
+
+// Update the firewall rules to allow Samba traffic
+sudo ufw allow samba
+
+
+// Since Samba doesn’t use the system account password, we need to set up a Samba password for our user account
+
+sudo smbpasswd -a username
+
+
+
+// On Windows, open up File Manager and edit the file path to
+
+\\ip-address\sambashare
+
+
+// On Ubuntu: Open up the default file manager and click Connect to Server then enter
+
+smb://ip-address/sambashare
+
+-----------------------------------------------------------------------------------------
+NFS File sharing installation
+
+Steps:
+NFS Server
+apt update
+apt -y install nfs-kernel-server
+systemctl status nfs-server
+mkdir /exports
+mkdir /exports/backups
+
+nano /etc/exports
+/exports/backups 192.168.0.127(rw,sync,no_subtree_check)
+
+exportfs -ar
+exportfs -v
+ufw allow from 192.168.0.127 to any port nfs
+
+NFS Client
+apt -y install nfs-common
+mkdir /mnt/backups
+mount 192.168.0.126:/exports/backups /mnt/backups
+
+nano /etc/fstab
+192.168.0.126:/exports/backups /mnt/backups nfs auto,nofail,noatime,nolock,tcp,actimeo=1800,_netdev 0 0
+
+
+------------------------------------------------------------------------------------------
+Remote Desktop for Linux
+
+Installing X2GO on Linux
+
+// Install x2go on the server
+sudo apt-get install x2goserver
+
+// Install x2go on the client
+sudo apt-get install x2goclient
+
+// Make sure SSH is Enable
+sudo systemctl status sshd
+
+----------------------------------------------------
+
+Installing PSSH "Parallel SSH" use for multiple SSH connection.
+
+sudo apt install python-pip python-setuptools
+
+sudo pip install parallel-ssh
+
+// Now copy the host IP in a file like
+sudo nano hosts
+
+Ex:
+192.168.0.10:22
+192.168.0.11:22
+192.168.0.12:22
+
+// Example connection to PSSH
+parallel-ssh -h hosts "uptime; df -h"
+
+
+---------------------------------------------------------
+
+FireWall UFW
+
+sudo apt install ufw
+
+// Mke sure IPV6 is set to YES
+sudo nano /etc/default/ufw
+ipv6=yes
+
+// Than set incoming and outgoing
+
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+//If needed
+sudo ufw allow ssh
+sudo ufw allow 22
+sudo ufw allow 80
+sudo ufw allow 443
+
+sudo ufw enable
+
+more info:
+
+https://www.digitalocean.com/community/tutorials/how-to-set-up-a-firewall-with-ufw-on-ubuntu-18-04
+
+----------------------------------------------------------------------------------------------------
+***Centos Cinfig***
+
+1.Before anything do this:
+Make sure EPEL repo enabled and installed on CentOS 8. If not, run:
+
+sudo yum -y install epel-release
+sudo yum repolist
+
+Than:
+yum update
+
+-------------------------------------------------------------------------------------
+***Fedora 35 setting and config***
+// Update fedora without "Kernel":
+
+sudo dnf update --exclude=kernel*
+
+
+// Install LXD
+sudo dnf update
+
+sudo dnf install snapd
+
+sudo ln -s /var/lib/snapd/snap /snap
+
+sudo snap install lxd
+
+// No internet access in LXD container
+// Because firewall-cmd not giving access thats why !
+// Do the following:
+
+firewall-cmd --add-interface=lxdbr0 --zone=trusted --permanent
+firewall-cmd --reload
+
+
+// IPV6 Error with UFW 
+// Do this:
+
+1.Disable IPV6 in /etc/default/ufw
+
+2.change IPV6=yes to IPV6=no
+
+3.sudo ufw reload
+
+----------------------------------------------------------------------------------------
+
+How To Install Docker
+
+1.sudo apt install docker
+2.systemctl enable docker
+3.systemctl start docker
+4.systemctl status docker
+
+Commands:
+
+sudo docker pull centos:latest
+
+sudo docker run -itd --name ubuntu1  6820b888e0ab // Run a container
+
+sudo docker run -itd -p 8080:80 --name kali1 6820b888e0ab
+
+sudo docker container start container_name   // Start container
+
+sudo docker stop comtainer_name  // Stop container
+
+sudo docker rm container_name // Remove the container
+
+sudo docker rmi image_name // Remove the download images
+
+sudo docker ps -a // Show All containers event those who are closed
+
+sudo docker search ubuntu // search the linux image
+
+sudo docker commit: 
+
+#Commit the changes to create a new image:
+docker container commit -a "auteur" -m "Changed default NGINX welcome message" Container_Name  new_Image_Name
+
+#Backup the new image:
+docker save <imagename> -o imagename_backup_yyyymmdd.tar
+#Restore the image:
+docker load < imagename_backup_yyyymmdd.tar
+
+#Backup the Container and Restore it as Image:
+docker container ls
+docker export containerid -o imagename_backup_yyyymmdd.tar
+#Restore The Image:
+docker import imagename_backup_yyyymmdd.tar  newimagename:tagname
+
+--------------------------------------------------------------------------------------------------
+
+Lost ROOT password or any user password
+
+1.Reboot linux server
+3.Then choose advanced and "Recovery Mode"
+4.After choose "Root" in the menu
+5.You should now see a root prompt.At this stage you should have a read-only filesystem. You have to remount it with write permissions
+6.Then enter    nmount -o remount,rw / 
+7.Now we can set the user's password with the passwd command
+8.Ex: passwd root
+
+---------------------------------------------------------------------------------------------------
+Encryption with GnuPG---Erase data---Zip and Unzip data
+
+// Create Key pairs
+gpg  --full-generate-key 
+
+// Paraphrase will be ask when run that command
+1_Encrypt the file with the command:
+gpg -c --no-symkey-cache --output filename.gpg test.docx
+
+// Paraphrase will be ask when Decrypt a file
+2_Decrypt the .gpg file with the command:
+gpg test.docx.gpg
+
+Ex: gpg -c --no-symkey-cache --cipher-algo AES256 --output epstein60.mp4.gpg Jeffrey\ Epstein60\ Minutes.mp4
+
+// If you want GPG Always ask for passphrase
+PS* o make gpg >=2.2.7 always ask for a passphrase for --symmetric (-c) encryption, run it with gpg --no-symkey-cache.
+
+--------------------------------------------
+
+// gpg with tar compression
+
+1_Encrypt Folder with files
+gpgtar --encrypt --symmetric --output name.gpg foldername
+
+
+2_Decrypt folder with files
+gpgtar --decrypt name.gpg
+
+3_Decrypt folder to another folder
+gpgtar --decrypt --directory foldername name.gpg
+
+-------------------------------------------------
+
+ccrypt encryption usage:
+
+// Encrypting files
+ccrypt -e filename
+// Decrypt files
+ccrypt -d filename
+// Change Key
+ccrypt -x filename
+// Read encrypt file without decrypting
+ccrypt -c filename or ccat filename
+-------------------------------------------------
+
+//Openssl encryption
+
+
+ Encryption:
+
+    openssl aes-256-cbc -in attack-plan.txt -out message.enc
+
+ Decryption:
+
+    openssl aes-256-cbc -d -in message.enc -out plain-text.txt
+    
+----------------------------------------------------------
+
+// Erase one file with Shred 5 is the number of time
+shred -zvu -n  5 filename or folder/*
+
+// Erase files with WIPE:
+1. sudo apt install wipe
+2. wipe -rfi folder/*
+
+------------------------------------------------------------
+ZIP and UNZIP
+
+// Zip folder with "-e" password protect
+zip -r -e data.zip data/
+
+// Unzip file you can add "-d" for destination
+unzip data.zip
+
+---------------------------------------------------------
+**First**
+sudo apt install qt5-default
+
+**Second**
+sudo apt install qtcreator
+
+
+**After** 
+If you want to get rid of the open red circles, go into Help->About Plugins and uncheck the Clang code model plugin. Then restart QT creator.
+
+QT c++ Programming with QTcreator
+
+**Image viewer code**
+
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <QFileDialog>
+
+
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent)
+    , ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+
+void MainWindow::on_pushButton_clicked()
+{
+   QString filename = QFileDialog::getOpenFileName(this, "Open File", "/home/arch1/");
+    ui->label->setPixmap(filename);
+}
